@@ -34,7 +34,6 @@
                 var timetable = new Timetable($this, settings);
                 //html build
                 timetable.buildTimeField();
-                //timetable.buildNewColumn();
                 jQuery.each(timetable.settings.schedule.data, function(index, val) {
                     timetable.buildColumn(val);
                     jQuery.each(val.schedule, function(index, data){
@@ -144,7 +143,7 @@
                 var html      = '';
                 var i         = start;
                 //html
-                html += '<div class="column column'+columnId+'" id="item'+columnId+'" data-column-id="'+data.id+'" style="width:'+this.settings.timetable.cellWidth+'px;float:left">';
+                html += '<div class="column column'+columnId+'" id="item'+columnId+'" data-column-id="'+data.id+'" style="width:'+this.settings.timetable.cellWidth+'px;">';
                 html += '<div class="headCell">'+data.title+'</div>';
                 html += '<div class="scheduleFrame">';
                 while(i<end) {
@@ -155,6 +154,12 @@
                 html += '</div>';
                 html += '</div>';
                 this.$el.append(html);
+                //width controll
+                var width = 0;
+                this.$el.children().each(function(){
+                    width += jQuery(this).outerWidth();
+                });
+                this.$el.css('width',width);
             },
             addSchedule: function(id,data) {
                 var start  = strToTime(this.settings.timetable.startTime);
