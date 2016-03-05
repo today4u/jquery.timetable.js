@@ -24,6 +24,7 @@
                     },
                     "resize":null,
                     "drag":null,
+                    "rangeSelection":null
                 }
             },options);
             //
@@ -37,7 +38,7 @@
                 jQuery.each(timetable.settings.schedule.data, function(index, val) {
                     timetable.buildColumn(val);
                     jQuery.each(val.schedule, function(index, data){
-                        timetable.addSchedule(val.id,data);
+                        timetable.addSchedule(val.id, data);
                     });
                 });
                 timetable.event();
@@ -45,50 +46,22 @@
                 $this.data('plugin_timetable', timetable);
             })
         },
-        //
-        addColumn: function(event) {
-            //console.log(event.target.id);
-            event.preventDefault();
-            return this.each(function() {
-                var timetable = jQuery(this).data('plugin_timetable');
-                var $form     = jQuery('.addColumn > form');
-                //処理
-                jQuery.ajax({
-                    type: $form.attr('method'),
-                    url:  $form.attr('action'),
-                    data: $form.serialize()
-                }).done(function(response) {
-                    timetable.buildColumn(JSON.parse(response));
-                    jQuery('div.addColumn').dialog('close');
-                    $form.find("textarea, :text, select").val("").end().find(":checked").prop("checked", false);;
-                    timetable.event();
-                }).fail(function(response) {
-                    console.log('fail');
-                    jQuery('div.addColumn').dialog('close');
-                    alert('Failed to add the column.');
-                });
-            });
-        },
-        sortColumn: function(event) {
-            return this.each(function() {
-                console.log('sortColumn');
-                console.log(jQuery(this).sortable("toArray"));
-            });
-        },
-        checkConflict:function(resized, sibling){
-            var resizedTime = topHeightToTime(resized.position().top,resized.height());
-            var siblingTime = topHeightToTime(sibling.position().top,sibling.height());
+        isDuplicate:function(resized, sibling){
             switch(true) {
-                case (siblingTime.start <= resizedTime.start && siblingTime.end >  resizedTime.start):
-                case (siblingTime.start <  resizedTime.end   && siblingTime.end >= resizedTime.end):
-                case (siblingTime.start >= resizedTime.start && siblingTime.end <= resizedTime.end):
-                    console.log("isConflict");
+                case (sibling.start <= resized.start && sibling.end >  resized.start):
+                case (sibling.start <  resized.end   && sibling.end >= resized.end):
+                case (sibling.start >= resized.start && sibling.end <= resized.end):
+                    console.log("isDuplicate");
                     return true;
                     break;
                 default:
                     return false;
             }
         },
+        updateContents:function(node, obj) {
+            node.find("time.start").text(obj.startTime);
+            node.find("time.end").text(obj.endTime);
+        }
 
     }
     // プラグイン登録
@@ -120,11 +93,13 @@
         return ("0"+num).substr(-2);
     }
     var topHeightToTime = function (top,height) {
-        var start = ((top / (settings.timetable.cellHeight) * settings.timetable.timeInterval) + strToTime(settings.timetable.startTime));
-        var end   = ((height) / (settings.timetable.cellHeight)) * settings.timetable.timeInterval + start;
+        var start = ((top / (settings.timetable.cellHeight+1) * settings.timetable.timeInterval) + strToTime(settings.timetable.startTime));
+        var end   = ((height) / (settings.timetable.cellHeight+1)) * settings.timetable.timeInterval + start;
         return {
             "start": start,
-            "end": end
+            "end": end,
+            "startTime": timeToStr(start),
+            "endTime":timeToStr(end),
         }
     }
 
@@ -141,7 +116,7 @@
             buildTimeField: function() {
                 var start = strToTime(this.settings.timetable.startTime);
                 var end   = strToTime(this.settings.timetable.endTime);
-                var html  =  '<div class="timeField" style="width:'+this.settings.timetable.cellWidth+'px;border-bottom:1px solid #ddd;">';
+                var html  =  '<div class="timeField">';
                 html  += '<div class="originCell">+</div>';
                 var i = start;
                 var isView = true;
@@ -149,10 +124,10 @@
                     if(isView) {
                         html += '<div class="timeCell">'+timeToStr(i)+'</div>';
                     } else {
-                        html += '<div class="timeCell" style="border-top:1px solid #fff;"></div>';
+                        html += '<div class="timeCell"></div>';
                     }
                     //next
-                    i+=600;
+                    i+=settings.timetable.timeInterval;
                     if(i % 3600) {
                         isView = false;
                     } else {
@@ -171,7 +146,7 @@
                 //html
                 html += '<div class="column column'+columnId+'" id="item'+columnId+'" data-column-id="'+data.id+'" style="width:'+this.settings.timetable.cellWidth+'px;float:left">';
                 html += '<div class="headCell">'+data.title+'</div>';
-                html += '<div class="scheduleZoon">';
+                html += '<div class="scheduleFrame">';
                 while(i<end) {
                     html += '<div class="cell time'+i+'" data-date="'+i+'"></div>'; 
                     i+=600;
@@ -184,60 +159,93 @@
             addSchedule: function(id,data) {
                 var start  = strToTime(this.settings.timetable.startTime);
                 var top    = ((strToTime(data.start) - start) / this.settings.timetable.timeInterval) * (this.settings.timetable.cellHeight + this.settings.timetable.borderWidth);
-                var height = ((strToTime(data.end) - strToTime(data.start)) / this.settings.timetable.timeInterval) * (this.settings.timetable.cellHeight + this.settings.timetable.borderWidth);
-                var style = 'top:'+top+'px;height:'+height+'px;width:'+(this.settings.timetable.cellWidth-1)+'px;left:0px;';
-                jQuery('<div id="schedule'+data.id+'" class="schedule" style="'+style+'"><div class="content">'+data.text+'</div></div>').data({"id":id}).appendTo(this.$el.children('div.column'+id).children("div.scheduleZoon"));
+                var height = ((strToTime(data.end) - strToTime(data.start)) / this.settings.timetable.timeInterval) * (this.settings.timetable.cellHeight + this.settings.timetable.borderWidth);//- 1;// test
+                var style  = 'top:'+top+'px;height:'+height+'px;width:'+(this.settings.timetable.cellWidth)+'px;left:0px;';
+                var html   = '<div id="schedule'+data.id+'" class="schedule" style="'+style+'">';
+                html      +=   '<div class="contents">';
+                html      +=   '<div class="time"><time class="start">'+data.start+'</time> - <time class="end">'+data.end+'</time></div>';
+                html      +=     '<div class="text">'+data.text+'</div>';
+                html      +=   '</div>';
+                html      += '</div>';
+                jQuery(html).data({"id":data.id,"top":top,"start":strToTime(data.start),"end":strToTime(data.end)}).appendTo(this.$el.children('div.column'+id).children("div.scheduleFrame"));
             },
             book: function() {
                 console.log("The Book");
             },
             event: function() {
                 //Range selection 
-                var isDown = false;
-                var selectedColumnId = '';
-                var clickedCellDate  = '';
-                var scUnit  = this.settings.timetable.cellHeight + this.settings.timetable.borderWidth;
+                var isDown           = false;
+                var selectedColumnId = null;
+                var downCellDate  = null;
+                var scUnit           = this.settings.timetable.cellHeight + 1;
                 jQuery("div.cell").on({
-                    'mousedown': function(ev){ 
+                    'mousedown': function(ev){
                         isDown   = true;
                         jQuery(this).addClass('selectedCell');
-                        selectedColumnId = jQuery(this).parent("div.column").data('columnId');
-                        clickedCellDate  = jQuery(this).data("date");
+                        selectedColumnId = jQuery(this).parent('div.scheduleFrame').parent("div.column").data('columnId');
+                        downCellDate     = jQuery(this).data("date");
                         return false;
                     },
                     'mouseup': function(ev){ 
                         if(isDown) {
-                            jQuery("div.addSchedule").dialog();
                             jQuery("div.cell").removeClass("selectedCell");
+                            //time
+                            var node        = jQuery(this);
+                            var upCellDate  = node.data("date");
+                            switch(true) {
+                                case downCellDate == upCellDate:
+                                case downCellDate <  upCellDate:
+                                    var start = downCellDate;
+                                    var end   = upCellDate + settings.timetable.timeInterval;
+                                    break;
+                                case downCellDate > upCellDate:
+                                    var start = upCellDate;
+                                    var end   = downCellDate + settings.timetable.timeInterval;
+                                    break;
+                                default:
+                                    isDown = false
+                                    return;
+                            }
+                            if(!settings.timetable.scheduleConflictAllow) {
+                                jQuery(this).siblings('div.schedule').each(function(key,val) {
+                                    var valObj  = jQuery(val);
+                                    var sibling = topHeightToTime(valObj.position().top,valObj.height());
+                                    if(jQuery.fn.timetable('isDuplicate',{"start":start,"end":end},sibling)) {
+                                        isDown = false;
+                                        return;
+                                    }
+                                });
+                            }
+                            console.log("test5");
+                            if(settings.event.rangeSelection) {
+                                settings.event.rangeSelection({"start":start,"end":end});
+                            }
                         }
                         isDown = false;
                     },
                     'mouseover':function() {
                         if(isDown == true) {
-                            //範囲選択の色   
-                            jQuery('div.column'+selectedColumnId+' > div.time'+jQuery(this).data("date")).addClass('selectedCell');
+                            //範囲選択の色
+                            jQuery('div.column'+selectedColumnId+' > div.scheduleFrame > div.time'+jQuery(this).data("date")).addClass('selectedCell');
+                            //消す
                             switch(true) {
-                                case clickedCellDate == jQuery(this).data('date'):
-                                    jQuery('div.column'+selectedColumnId+' > div.time'+jQuery(this).data("date")).prevAll().removeClass('selectedCell');
-                                    jQuery('div.column'+selectedColumnId+' > div.time'+jQuery(this).data("date")).nextAll().removeClass('selectedCell');
+                                case downCellDate == jQuery(this).data('date'):
+                                    jQuery('div.column'+selectedColumnId+' > div.scheduleFrame > div.time'+jQuery(this).data("date")).prevAll().removeClass('selectedCell');
+                                    jQuery('div.column'+selectedColumnId+' > div.scheduleFrame > div.time'+jQuery(this).data("date")).nextAll().removeClass('selectedCell');
                                     break;
-                                case clickedCellDate < jQuery(this).data('date'):
-                                    jQuery('div.column'+selectedColumnId+' > div.time'+jQuery(this).data("date")).nextAll().removeClass('selectedCell');
-                                    jQuery('div.column'+selectedColumnId+' > div.time'+clickedCellDate).prevAll().removeClass('selectedCell');
-                                    jQuery('div.column'+selectedColumnId+' > div.time'+jQuery(this).data("date")).prevUntil('div.time'+clickedCellDate).addClass('selectedCell');
+                                case downCellDate < jQuery(this).data('date'):
+                                    jQuery('div.column'+selectedColumnId+' > div > div.time'+jQuery(this).data("date")).nextAll().removeClass('selectedCell');
+                                    jQuery('div.column'+selectedColumnId+' > div > div.time'+downCellDate).prevAll().removeClass('selectedCell');
+                                    jQuery('div.column'+selectedColumnId+' > div > div.time'+jQuery(this).data("date")).prevUntil('div.time'+downCellDate).addClass('selectedCell');
                                     break;
-                                case clickedCellDate > jQuery(this).data('date'):
-                                    jQuery('div.column'+selectedColumnId+' > div.time'+jQuery(this).data("date")).prevAll().removeClass('selectedCell');
-                                    jQuery('div.column'+selectedColumnId+' > div.time'+clickedCellDate).nextAll().removeClass('selectedCell');
-                                    jQuery('div.column'+selectedColumnId+' > div.time'+jQuery(this).data("date")).nextUntil('div.time'+clickedCellDate).addClass('selectedCell');
+                                case downCellDate > jQuery(this).data('date'):
+                                    jQuery('div.column'+selectedColumnId+' > div > div.time'+jQuery(this).data("date")).prevAll().removeClass('selectedCell');
+                                    jQuery('div.column'+selectedColumnId+' > div > div.time'+downCellDate).nextAll().removeClass('selectedCell');
+                                    jQuery('div.column'+selectedColumnId+' > div > div.time'+jQuery(this).data("date")).nextUntil('div.time'+downCellDate).addClass('selectedCell');
                                     break;
                             }
                         }
                     }
-                });
-                //add column dialog open
-                jQuery("div.originCell").on('click',function(){
-                    jQuery("div.addColumn").dialog();
                 });
                 if(this.settings.timetable.sortableColumn) {
                     this.$el.sortable({
@@ -254,47 +262,94 @@
                     });
                 }
                 //resizable
-
                 this.$el.find("div.schedule").resizable({
                     handles: "n,s",
-                    grid: [this.settings.timetable.cellWidth-1,scUnit],
+                    grid: [this.settings.timetable.cellWidth,scUnit],
                     containment: "parent",
                     start: function(e, ui) {
                     },
+                    resize: function(e, ui) {
+                        var node       = jQuery(this);
+                        var time       = topHeightToTime(node.position().top, node.height());
+                        jQuery.fn.timetable('updateContents',node, time);
+                    },
                     stop: function(e, ui) {
-                        //var timetable = jQuery(this).parent("div.scheduleZoon").parent("div.column").parent().data('plugin_timetable');
-                        var node      = jQuery(this);
-                        var time      = topHeightToTime(node.position().top, node.height());
-                        //conflict check
+                        var isError    = false;
+                        var node       = jQuery(this);
+                        var time       = topHeightToTime(node.position().top, node.height());
                         if(!settings.timetable.scheduleConflictAllow) {
-                            jQuery(this).siblings('div.schedule').each(function(key,val) {
-                                //if(timetable.checkConflict(node,jQuery(val))) {
-                                if(jQuery.fn.timetable('checkConflict',node,jQuery(val))) {
-                                    //resize cancel
-                                    node.css('height',node.data('ui-resizable').originalSize.height).css("top",node.data('ui-resizable').originalPosition.top)
+                            node.siblings('div.schedule').each(function(key,val) {
+                                var valObj  = jQuery(val);
+                                var sibling = topHeightToTime(valObj.position().top, valObj.height());
+                                if(jQuery.fn.timetable('isDuplicate',time,sibling)) {
+                                    //cancel
+                                    isError = true;
+                                    node.css('height',node.data('ui-resizable').originalSize.height).css("top",node.data('ui-resizable').originalPosition.top);
+                                    var originalTime = topHeightToTime(node.data('ui-resizable').originalPosition.top, node.data('ui-resizable').originalSize.height);
+                                    jQuery.fn.timetable('updateContents',node, originalTime);
                                 }
                             });
                         }
-                        console.log(time);
-                        settings.event.resize(e, ui);
+                        if(!isError) {
+                            jQuery.fn.timetable('updateContents',node, time);
+                            node.data({
+                                "top":node.position().top,
+                                "start":time.start, 
+                                "end":time.end
+                            });
+                            if(settings.event.resize) {
+                                settings.event.resize(e, ui, time);
+                            }
+                        }
                     }
                 });
                 //draggable
                 this.$el.find("div.schedule").draggable({
                     axis: "y",
-                    grid: [this.settings.timetable.cellWidth-1,scUnit],
+                    grid: [this.settings.timetable.cellWidth,scUnit],
                     containment: "parent",
+                    start: function(e,ui) {
+                        // console.log('start position:'+ jQuery(this).data('ui-draggable').position.top);
+                        // console.log('start OrigPosi:'+ jQuery(this).data('ui-draggable').originalPosition.top);
+                    },
+                    drag: function(e,ui) {
+                        var node       = jQuery(this);
+                        var time       = topHeightToTime(node.position().top, node.height());
+                        jQuery.fn.timetable('updateContents',node, time);
+                    },
                     stop: function(e,ui) {
-                        var node      = jQuery(this);
-                        var time      = topHeightToTime(node.position().top, node.height());
-                        console.log(time);
-                        settings.event.drag(e, ui);
+                        var node       = jQuery(this);
+                        var time       = topHeightToTime(node.position().top, node.height());
+                        var isError    = false;
+                        if(!settings.timetable.scheduleConflictAllow) {
+                            jQuery(this).siblings('div.schedule').each(function(key,val) {
+                                var valObj  = jQuery(val);
+                                var sibling = topHeightToTime(valObj.position().top, valObj.height());
+                                if(jQuery.fn.timetable('isDuplicate',time,sibling)) {
+                                    //draggable cancel
+                                    console.log(node.data("top"));
+                                    jQuery.fn.timetable('updateContents',node, {"startTime":timeToStr(node.data("start")),"endTime":timeToStr(node.data("end"))});
+                                    //node.css("top",node.data('ui-draggable').originalPosition.top);
+                                    node.css("top",node.data("top"));
+                                    isError    = true;
+                                }
+                            });
+                        }
+                        if(!isError) {
+                            jQuery.fn.timetable('updateContents',node, time);
+                            node.data({
+                                "top":node.position().top,
+                                "start":time.start, 
+                                "end":time.end
+                            });
+                            if(settings.event.drag) {
+                                settings.event.drag(e, ui, time);
+                            }
+                        }
                     }
                 });
                 //
-                jQuery('div.schedule').on('click',function() {
-                    console.log('schedule edit');
-                });
+
             },
             /*
              * 指定したメソッドのthisがTimetableのインスタンスになるように束縛します
