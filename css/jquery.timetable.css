@@ -1,0 +1,86 @@
+#timetable {
+    /*position:relative;*/
+    overflow:hidden;
+    height:100%;
+}
+#timetable div.timeField {
+    float:left;
+    border:1px solid #ddd;
+    border-left:2px solid #ddd;
+    border-bottom:2px solid #ddd;
+    text-align:center;
+    width:150px;
+    position:relative;
+}
+#timetable div.column {
+    float:left;
+    border:1px solid #ddd;
+    position: relative;
+}
+#timetable div.column:last-child {
+    border-right:2px solid #ddd;;
+}
+#timetable div.scheduleFrame{
+    position: relative;
+}
+
+#timetable div.originCell {
+    height:40px;
+    width:150px;
+    z-index:100;
+    border-top:1px solid #ddd;
+    border-bottom:1px solid #ddd;
+}
+#timetable div.headCell {
+    border-top:1px solid #ddd;
+    border-bottom:2px solid #ddd;
+    height:40px;
+}
+#timetable div.cell {
+   /*border-left:  1px solid #ddd;*/
+   border-bottom:1px solid #ddd;
+   height:25px;
+}
+#timetable div.timeCell{
+   border-top  :1px solid #ddd;
+   height:25px;
+}
+#timetable div.timeCell:empty {
+   border-top:1px solid #fff;
+}
+#timetable div.schedule {
+  position: absolute !important;
+  color: #FFF;
+  overflow:hidden;
+  cursor: pointer;
+  z-index: 10;
+}
+#timetable div.schedule > div.contents {
+  height:100%;
+  border:1px solid #3E82c5;
+  background: #4f93d6;
+  opacity: 0.7;
+  box-sizing: border-box;
+}
+
+#timetable div.schedule > div.contents > div.time {
+    font-size:12px;
+    font-weight:bold;
+}
+
+.fixed {
+  position: fixed;
+  top: 0;
+}
+
+#modal-overlay{
+  width:100%;
+  height:120%;
+  position:fixed;
+  top:0;
+  left:0;
+}
+
+.selectedCell {
+    background-color:#eee;
+}

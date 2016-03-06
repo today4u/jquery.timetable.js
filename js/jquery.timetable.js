@@ -19,11 +19,9 @@
                     "data": {}
                 },
                 "event": {
-                    "test":function() {
-                        console.log('test');
-                    },
                     "resize":null,
                     "drag":null,
+                    "sort":null,
                     "rangeSelection":null
                 }
             },options);
@@ -50,7 +48,6 @@
                 case (sibling.start <= resized.start && sibling.end >  resized.start):
                 case (sibling.start <  resized.end   && sibling.end >= resized.end):
                 case (sibling.start >= resized.start && sibling.end <= resized.end):
-                    console.log("isDuplicate");
                     return true;
                     break;
                 default:
@@ -116,13 +113,13 @@
                 var start = strToTime(this.settings.timetable.startTime);
                 var end   = strToTime(this.settings.timetable.endTime);
                 var html  =  '<div class="timeField">';
-                html  += '<div class="originCell">+</div>';
+                html  += '<div class="originCell headFix">+</div>';
                 var i = start;
                 var isView = true;
                 while(i<end) {
                     if(isView) {
                         html += '<div class="timeCell">'+timeToStr(i)+'</div>';
-                    } else {
+                    } else {    
                         html += '<div class="timeCell"></div>';
                     }
                     //next
@@ -144,7 +141,7 @@
                 var i         = start;
                 //html
                 html += '<div class="column column'+columnId+'" id="item'+columnId+'" data-column-id="'+data.id+'" style="width:'+this.settings.timetable.cellWidth+'px;">';
-                html += '<div class="headCell">'+data.title+'</div>';
+                html += '<div class="headCell headFix" style="width:'+this.settings.timetable.cellWidth+'px;">'+data.title+'</div>';
                 html += '<div class="scheduleFrame">';
                 while(i<end) {
                     html += '<div class="cell time'+i+'" data-date="'+i+'"></div>'; 
@@ -173,9 +170,6 @@
                 html      +=   '</div>';
                 html      += '</div>';
                 jQuery(html).data({"id":data.id,"top":top,"start":strToTime(data.start),"end":strToTime(data.end)}).appendTo(this.$el.children('div.column'+id).children("div.scheduleFrame"));
-            },
-            book: function() {
-                console.log("The Book");
             },
             event: function() {
                 //Range selection 
@@ -221,7 +215,6 @@
                                     }
                                 });
                             }
-                            console.log("test5");
                             if(settings.event.rangeSelection) {
                                 settings.event.rangeSelection({"start":start,"end":end});
                             }
@@ -260,9 +253,8 @@
                         update: function(ev, ui) {
                             var timetable = jQuery(this).data('plugin_timetable');
                             if(timetable.settings.event){
-                                timetable.settings.event.test();
+                                timetable.settings.event.sort();
                             }
-                            console.log(jQuery(this).sortable("toArray"));
                         }
                     });
                 }
@@ -314,8 +306,6 @@
                     grid: [this.settings.timetable.cellWidth,scUnit],
                     containment: "parent",
                     start: function(e,ui) {
-                        // console.log('start position:'+ jQuery(this).data('ui-draggable').position.top);
-                        // console.log('start OrigPosi:'+ jQuery(this).data('ui-draggable').originalPosition.top);
                     },
                     drag: function(e,ui) {
                         var node       = jQuery(this);
@@ -332,7 +322,6 @@
                                 var sibling = topHeightToTime(valObj.position().top, valObj.height());
                                 if(jQuery.fn.timetable('isDuplicate',time,sibling)) {
                                     //draggable cancel
-                                    console.log(node.data("top"));
                                     jQuery.fn.timetable('updateContents',node, {"startTime":timeToStr(node.data("start")),"endTime":timeToStr(node.data("end"))});
                                     //node.css("top",node.data('ui-draggable').originalPosition.top);
                                     node.css("top",node.data("top"));
@@ -353,8 +342,17 @@
                         }
                     }
                 });
-                //
+                //window scroll
+                var headFix = jQuery('div.headFix');
+                var offset  = headFix.offset();
+                jQuery(window).on('scroll',this.$el,function(){
+                  if(jQuery(window).scrollTop() > offset.top - 10) {
+                    headFix.addClass('fixed');
+                  } else {
+                    headFix.removeClass('fixed');
+                  }
 
+                });
             },
             /*
              * 指定したメソッドのthisがTimetableのインスタンスになるように束縛します
