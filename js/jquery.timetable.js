@@ -191,6 +191,7 @@
                             //time
                             var node        = jQuery(this);
                             var upCellDate  = node.data("date");
+                            var isError     = false;
                             switch(true) {
                                 case downCellDate == upCellDate:
                                 case downCellDate <  upCellDate:
@@ -210,12 +211,13 @@
                                     var valObj  = jQuery(val);
                                     var sibling = topHeightToTime(valObj.position().top,valObj.height());
                                     if(jQuery.fn.timetable('isDuplicate',{"start":start,"end":end},sibling)) {
-                                        isDown = false;
+                                        isError = true;
+                                        isDown  = false;
                                         return;
                                     }
                                 });
                             }
-                            if(settings.event.rangeSelection) {
+                            if(!isError && settings.event.rangeSelection) {
                                 settings.event.rangeSelection({"start":start,"end":end});
                             }
                         }
