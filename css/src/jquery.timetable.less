@@ -1,0 +1,102 @@
+@borderColor         : #888;
+@timeFieldBgColor    : #ddd;
+@headCellsBgColor    : #666;
+@rangeSelectColor    : #f8e58c;
+@scheduleBgColor     : #6495ed;
+@scheduleBorderColor : #3E82c5;
+@headerHeight        : 40px;
+
+
+.timetable {
+    overflow:hidden;
+    height:100%;
+
+    div.headerCells {
+        text-align:center;
+        background-color: @headCellsBgColor;
+        color:#fff;
+        height: @headerHeight;
+        div {
+          display: table-cell;
+          vertical-align: middle;
+          height: @headerHeight;
+        }
+        
+    }
+    div.fixed {
+        position: fixed;
+        top: 0;
+        z-index: 100;
+    }
+    div.scrollArea {
+        margin-top: @headerHeight;
+    }
+    div.timeField {
+        float:left;
+        border:1px solid @borderColor;
+        border-left:2px solid @borderColor;
+        border-bottom:2px solid @borderColor;
+        background-color: @timeFieldBgColor;
+        text-align:center;
+        width:150px;
+        position:relative;
+
+        div.originCell {
+            width:150px;
+            border-top:1px solid @borderColor;
+            border-bottom:2px solid @borderColor;
+        }
+        div.timeCell{
+        }
+        div.timeCell:empty {
+           border-top:1px solid @timeFieldBgColor;
+        }
+        div.timeCellBorder {
+            border-bottom:1px solid @borderColor;
+        }
+    }
+    div.column {
+        float:left;
+        border:1px solid @borderColor;
+        position: relative;
+
+        div.headCell {
+            border-top:1px solid @borderColor;
+            border-bottom:2px solid @borderColor;
+        }
+        div.scheduleFrame{
+            position: relative;
+            
+            div.selectedCell {
+                background-color: @rangeSelectColor
+            }
+            div.cell {
+                border-bottom:1px solid @borderColor;
+            }
+            div.schedule {
+                position: absolute !important;
+                color: #FFF;
+                overflow:hidden;
+                cursor: pointer;
+                z-index: 10;
+
+                div.contents {
+                    height:100%;
+                    border:1px solid @scheduleBorderColor;
+                    background-color: @scheduleBgColor;
+                    opacity: 0.7;
+                    box-sizing: border-box;
+
+                    div.time {
+                        font-size:12px;
+                        font-weight:bold;
+                    }
+                }
+            }
+        }
+    }
+    div.column:last-child {
+        border-right:2px solid @borderColor;
+    }
+}
+

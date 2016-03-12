@@ -1,0 +1,83 @@
+.timetable {
+  overflow: hidden;
+  height: 100%;
+}
+.timetable div.headerCells {
+  text-align: center;
+  background-color: #666;
+  color: #fff;
+  height: 40px;
+}
+.timetable div.headerCells div {
+  display: table-cell;
+  vertical-align: middle;
+  height: 40px;
+}
+.timetable div.fixed {
+  position: fixed;
+  top: 0;
+  z-index: 100;
+}
+.timetable div.scrollArea {
+  margin-top: 40px;
+}
+.timetable div.timeField {
+  float: left;
+  border: 1px solid #888;
+  border-left: 2px solid #888;
+  border-bottom: 2px solid #888;
+  background-color: #ddd;
+  text-align: center;
+  width: 150px;
+  position: relative;
+}
+.timetable div.timeField div.originCell {
+  width: 150px;
+  border-top: 1px solid #888;
+  border-bottom: 2px solid #888;
+}
+.timetable div.timeField div.timeCell:empty {
+  border-top: 1px solid #ddd;
+}
+.timetable div.timeField div.timeCellBorder {
+  border-bottom: 1px solid #888;
+}
+.timetable div.column {
+  float: left;
+  border: 1px solid #888;
+  position: relative;
+}
+.timetable div.column div.headCell {
+  border-top: 1px solid #888;
+  border-bottom: 2px solid #888;
+}
+.timetable div.column div.scheduleFrame {
+  position: relative;
+}
+.timetable div.column div.scheduleFrame div.selectedCell {
+  background-color: #f8e58c;
+}
+.timetable div.column div.scheduleFrame div.cell {
+  border-bottom: 1px solid #888;
+}
+.timetable div.column div.scheduleFrame div.schedule {
+  position: absolute !important;
+  color: #FFF;
+  overflow: hidden;
+  cursor: pointer;
+  z-index: 10;
+}
+.timetable div.column div.scheduleFrame div.schedule div.contents {
+  height: 100%;
+  border: 1px solid #3E82c5;
+  background-color: #6495ed;
+  opacity: 0.7;
+  box-sizing: border-box;
+}
+.timetable div.column div.scheduleFrame div.schedule div.contents div.time {
+  font-size: 12px;
+  font-weight: bold;
+}
+.timetable div.column:last-child {
+  border-right: 2px solid #888;
+}
