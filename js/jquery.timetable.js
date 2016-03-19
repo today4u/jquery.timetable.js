@@ -37,8 +37,8 @@
                 }
                 jQuery.each(timetable.settings.schedule.data, function(index, val) {
                     timetable.buildColumn(val);
-                    jQuery.each(val.schedule, function(index, data){
-                        timetable.addSchedule(val.id, data);
+                    jQuery.each(val.event, function(index, data){
+                        timetable.addEvent(val.id, data);
                     });
                 });
                 timetable.event();
@@ -259,7 +259,7 @@
                 });
                 this.$el.css('width',width);
             },
-            addSchedule: function(columnId,data) {
+            addEvent: function(columnId,data) {
                 var start  = timeStrToInt(settings.timetable.startTime);
                 var top    = ((timeStrToInt(data.startTime) - start) / settings.timetable.timeInterval) * (settings.timetable.cellHeight + 1);
                 var height = ((timeStrToInt(data.endTime) - timeStrToInt(data.startTime)) / settings.timetable.timeInterval) * (settings.timetable.cellHeight + 1);
@@ -365,21 +365,36 @@
                 }
                 //window scroll
                 var offset  = jQuery('div.headerCells').offset();
+                var xScroll = '';
+                var yScroll = '';
                 jQuery(window).on('scroll',function(){
-                    console.log("scroll");
-                    if(jQuery(window).scrollTop() > offset.top) {
-                        jQuery('div.headerCells').addClass('fixed');
-                        jQuery('div.headerCells').next().addClass('scrollArea');
-                    } else {
-                        jQuery('div.headerCells').removeClass('fixed');
-                        jQuery('div.headerCells').next().removeClass('scrollArea');
+                    //横スクロール
+                    if(xScroll != jQuery(window).scrollLeft()) {
+                        jQuery('div.originCell').css('left',2 - jQuery(window).scrollLeft());
+                        jQuery('div.headCell').each(function() {
+                            var orgLeft = 152 + (180 * ($(this).parent().index() - 1)) + (2 * ($(this).parent().index()));
+                            var left    = orgLeft - jQuery(window).scrollLeft();
+                            jQuery(this).css('left',left);
+
+                        });
                     }
+                    if(yScroll != jQuery(window).scrollTop()) {
+                        if(jQuery(window).scrollTop() > offset.top) {
+                            jQuery('div.headerCells').addClass('fixed');
+                            jQuery('div.headerCells').next().addClass('scrollArea');
+                        } else {
+                            jQuery('div.headerCells').removeClass('fixed');
+                            jQuery('div.headerCells').next().removeClass('scrollArea');
+                        }
+                    }
+                    xScroll = jQuery(window).scrollLeft();
+                    yScroll = jQuery(window).scrollTop();
                 });
             },
             _bind: function(funcName) {
               var that = this;
               return function() { that[funcName].apply(that, arguments) };
-            },
+            }
         });
         return Timetable;
     })();
