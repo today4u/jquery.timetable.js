@@ -22,7 +22,7 @@
                     "drag":null,
                     "sort":null,
                     "rangeSelection":null,
-                    "duplicate":null,
+                    "conflict":null,
                 }
             },options);
             //
@@ -85,7 +85,7 @@
             "endTime":intToTimeStr(end),
         }
     }
-    function isDuplicate (resized, sibling){
+    function isConflict (resized, sibling){
         switch(true) {
             case (sibling.start <= resized.start && sibling.end >  resized.start):
             case (sibling.start <  resized.end   && sibling.end >= resized.end):
@@ -121,14 +121,14 @@
                     node.siblings('div.schedule').each(function(key,val) {
                         var valObj  = jQuery(val);
                         var sibling = topHeightToTime(valObj.position().top, valObj.height());
-                        if(isDuplicate(time,sibling)) {
+                        if(isConflict(time,sibling)) {
                             //cancel
                             isError = true;
                             node.css('height',node.data('ui-resizable').originalSize.height).css("top",node.data('ui-resizable').originalPosition.top);
                             var originalTime = topHeightToTime(node.data('ui-resizable').originalPosition.top, node.data('ui-resizable').originalSize.height);
                             updateContents(node, originalTime);
-                            if(settings.event.duplicate) {
-                                settings.event.duplicate()
+                            if(settings.event.conflict) {
+                                settings.event.conflict()
                             }
                             return;
                         }
@@ -170,13 +170,13 @@
                     jQuery(this).siblings('div.schedule').each(function(key,val) {
                         var valObj  = jQuery(val);
                         var sibling = topHeightToTime(valObj.position().top, valObj.height());
-                        if(isDuplicate(time,sibling)) {
+                        if(isConflict(time,sibling)) {
                             //draggable cancel
                             updateContents(node, {"startTime":intToTimeStr(node.data("start")),"endTime":intToTimeStr(node.data("end"))});
                             node.css("top",node.data("top"));
                             isError    = true;
-                            if(settings.event.duplicate) {
-                                settings.event.duplicate()
+                            if(settings.event.conflict) {
+                                settings.event.conflict()
                             }
                             return;
                         }
@@ -310,18 +310,18 @@
                                 jQuery(this).siblings('div.schedule').each(function(key,val) {
                                     var valObj  = jQuery(val);
                                     var sibling = topHeightToTime(valObj.position().top,valObj.height());
-                                    if(isDuplicate({"start":start,"end":end},sibling)) {
+                                    if(isConflict({"start":start,"end":end},sibling)) {
                                         isError = true;
                                         isDown  = false;
-                                        if(settings.event.duplicate) {
-                                            settings.event.duplicate()
+                                        if(settings.event.conflict) {
+                                            settings.event.conflict()
                                         }
                                         return;
                                     }
                                 });
                             }
                             if(!isError && settings.event.rangeSelection) {
-                                settings.event.rangeSelection({"start":start,"end":end});
+                                settings.event.rangeSelection({"startTime":intToTimeStr(start),"endTime":intToTimeStr(end)});
                             }
                         }
                         isDown = false;
@@ -367,13 +367,25 @@
                 var offset  = jQuery('div.headerCells').offset();
                 var xScroll = '';
                 var yScroll = '';
+                if (settings.timetable.timeField) {
+                    var timeFieldWidth = jQuery('div.timeField').width() + 2;
+                } else {
+                    var timeFieldWidth = 1;
+                }
                 jQuery(window).on('scroll',function(){
                     //横スクロール
                     if(xScroll != jQuery(window).scrollLeft()) {
-                        jQuery('div.originCell').css('left',2 - jQuery(window).scrollLeft());
+                        var initPoint = jQuery('div.timetable').position().left;
+                        if (settings.timetable.timeField) {
+                            jQuery('div.originCell').css('left',2 - jQuery(window).scrollLeft() + initPoint);
+                        }
                         jQuery('div.headCell').each(function() {
-                            var orgLeft = 152 + (180 * ($(this).parent().index() - 1)) + (2 * ($(this).parent().index()));
-                            var left    = orgLeft - jQuery(window).scrollLeft();
+                            if (settings.timetable.timeField) {
+                                var defaultPositionLeft = timeFieldWidth + initPoint + (settings.timetable.cellWidth * ($(this).parent().index() - 1)) + (2 * ($(this).parent().index()));
+                            } else {
+                                var defaultPositionLeft = timeFieldWidth + initPoint + (settings.timetable.cellWidth *  $(this).parent().index()     ) + (2 * ($(this).parent().index()));
+                            }
+                            var left    = defaultPositionLeft - jQuery(window).scrollLeft();
                             jQuery(this).css('left',left);
 
                         });

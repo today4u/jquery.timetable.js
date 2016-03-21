@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <!-- <link rel="stylesheet" type="text/css" href="../css/dist/jquery.timetable.min.css"> -->
+    <link rel="stylesheet/less" type="text/css" href="../css/src/jquery.timetable.less">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/less.js/2.6.1/less.js" type="text/javascript"></script>
+    
+    <title>jQuery Timetable</title>
+</head>
+<body>
+<h1>TimeTable</h1>
+<div id="timetable"></div>
+<script src="http://code.jquery.com/jquery-2.2.1.js" type="text/javascript" language="javascript"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="../js/jquery.timetable.js"></script>
+<script>
+$(document).ready(function(){
+  // $.getJSON("/timetable/demo/apisample/schedule.json",function(data){
+    $inputs = $("#timetable").timetable({
+      "timetable": {
+        "startTime":"08:30",
+        "endTime":"21:30",
+        "timeField": true
+      },
+      "schedule": {
+        "data": [
+          {
+            "id":3,
+            "title":"A",
+            "event":[
+              {"id":1,"startTime":"08:30","endTime":"10:00","text":"Hello, world!"},
+              {"id":2,"startTime":"17:00","endTime":"18:00","text":"Sample"}
+            ]
+          },
+          {
+            "id":4,
+            "title":"B",
+            "event":[
+              {"id":3,"startTime":"11:00","endTime":"14:00","text":"Example"}
+            ]
+          },
+          {
+            "id":5,
+            "title":"C",
+            "event":[
+              {"id":4,"startTime":"09:00","endTime":"10:00","text":"Demo"}
+            ]
+          }
+        ]
+      },
+      "event":{
+          "rangeSelection":function(time) {
+              console.log(time);
+          },
+          "resize":function(event, ui, time) {
+              console.log('resize');
+          },
+          "drag":function(event, ui, time) {
+              console.log('drag');
+          },
+          "sort":function(event, ui) {
+              console.log('sort');
+          },
+          "conflict": function() {
+              console.log('conflict!');
+          }
+      }
+    });
+    Timetable = $inputs.data('plugin_timetable');
+  });
+// });
+</script>
+<link type="text/css" rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.min.css">
+</body>
+</html>
+
