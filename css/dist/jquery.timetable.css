@@ -51,30 +51,30 @@
   border-top: 1px solid #888;
   border-bottom: 2px solid #888;
 }
-.timetable div.column div.scheduleFrame {
+.timetable div.column div.eventFrame {
   position: relative;
 }
-.timetable div.column div.scheduleFrame div.selectedCell {
+.timetable div.column div.eventFrame div.selectedCell {
   background-color: #f8e58c;
 }
-.timetable div.column div.scheduleFrame div.cell {
+.timetable div.column div.eventFrame div.cell {
   border-bottom: 1px solid #888;
 }
-.timetable div.column div.scheduleFrame div.schedule {
+.timetable div.column div.eventFrame div.event {
   position: absolute !important;
   color: #FFF;
   overflow: hidden;
   cursor: pointer;
   z-index: 10;
 }
-.timetable div.column div.scheduleFrame div.schedule div.contents {
+.timetable div.column div.eventFrame div.event div.contents {
   height: 100%;
   border: 1px solid #3E82c5;
   background-color: #6495ed;
   opacity: 0.7;
   box-sizing: border-box;
 }
-.timetable div.column div.scheduleFrame div.schedule div.contents div.time {
+.timetable div.column div.eventFrame div.event div.contents div.time {
   font-size: 12px;
   font-weight: bold;
 }

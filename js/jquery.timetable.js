@@ -12,7 +12,7 @@
                     "timeField": true,
                     "cellWidth":180,
                     "sortableColumn":true,
-                    "scheduleConflictAllow":false,
+                    "eventConflictAllow":false,
                 },
                 "schedule": {
                     "data": {}
@@ -117,8 +117,8 @@
                 var isError    = false;
                 var node       = jQuery(this);
                 var time       = topHeightToTime(node.position().top, node.height());
-                if(!settings.timetable.scheduleConflictAllow) {
-                    node.siblings('div.schedule').each(function(key,val) {
+                if(!settings.timetable.eventConflictAllow) {
+                    node.siblings('div.event').each(function(key,val) {
                         var valObj  = jQuery(val);
                         var sibling = topHeightToTime(valObj.position().top, valObj.height());
                         if(isConflict(time,sibling)) {
@@ -166,8 +166,8 @@
                 var node       = jQuery(this);
                 var time       = topHeightToTime(node.position().top, node.height());
                 var isError    = false;
-                if(!settings.timetable.scheduleConflictAllow) {
-                    jQuery(this).siblings('div.schedule').each(function(key,val) {
+                if(!settings.timetable.eventConflictAllow) {
+                    jQuery(this).siblings('div.event').each(function(key,val) {
                         var valObj  = jQuery(val);
                         var sibling = topHeightToTime(valObj.position().top, valObj.height());
                         if(isConflict(time,sibling)) {
@@ -244,7 +244,7 @@
                 //html
                 html += '<div class="column column'+columnId+'" id="item'+columnId+'" data-column-id="'+data.id+'" style="width:'+settings.timetable.cellWidth+'px;">';
                 html +=   '<div class="headCell headerCells" style="width:'+settings.timetable.cellWidth+'px;"><div style="width:'+settings.timetable.cellWidth+'px;">'+data.title+'</div></div>';
-                html +=   '<div class="scheduleFrame">';
+                html +=   '<div class="eventFrame">';
                 while(i<end) {
                     html += '<div class="cell time'+i+'" data-date="'+i+'" style="height:'+settings.timetable.cellHeight+'px;"></div>'; 
                     i+=settings.timetable.timeInterval;
@@ -264,13 +264,13 @@
                 var top    = ((timeStrToInt(data.startTime) - start) / settings.timetable.timeInterval) * (settings.timetable.cellHeight + 1);
                 var height = ((timeStrToInt(data.endTime) - timeStrToInt(data.startTime)) / settings.timetable.timeInterval) * (settings.timetable.cellHeight + 1);
                 var style  = 'top:'+top+'px;height:'+height+'px;width:'+(settings.timetable.cellWidth)+'px;left:0px;';
-                var html   = '<div id="schedule'+data.id+'" class="schedule" style="'+style+'">';
+                var html   = '<div class="event" style="'+style+'">';
                 html      +=   '<div class="contents">';
                 html      +=   '<div class="time"><time class="start">'+data.startTime+'</time> - <time class="end">'+data.endTime+'</time></div>';
                 html      +=     '<div class="text">'+data.text+'</div>';
                 html      +=   '</div>';
                 html      += '</div>';
-                jQuery(html).data({"id":data.id,"top":top,"start":timeStrToInt(data.startTime),"end":timeStrToInt(data.endTime)}).resizable(resizableOptions()).draggable(draggableOptions()).appendTo(this.$el.children('div.column'+columnId).children("div.scheduleFrame"));
+                jQuery(html).data({"id":data.id,"top":top,"start":timeStrToInt(data.startTime),"end":timeStrToInt(data.endTime)}).resizable(resizableOptions()).draggable(draggableOptions()).appendTo(this.$el.children('div.column'+columnId).children("div.eventFrame"));
             },
             event: function() {
                 //Range selection 
@@ -281,7 +281,7 @@
                     'mousedown': function(ev){
                         isDown   = true;
                         jQuery(this).addClass('selectedCell');
-                        selectedColumnId = jQuery(this).parent('div.scheduleFrame').parent("div.column").data('columnId');
+                        selectedColumnId = jQuery(this).parent('div.eventFrame').parent("div.column").data('columnId');
                         downCellDate     = jQuery(this).data("date");
                         return false;
                     },
@@ -306,8 +306,8 @@
                                     isDown = false
                                     return;
                             }
-                            if(!settings.timetable.scheduleConflictAllow) {
-                                jQuery(this).siblings('div.schedule').each(function(key,val) {
+                            if(!settings.timetable.eventConflictAllow) {
+                                jQuery(this).siblings('div.event').each(function(key,val) {
                                     var valObj  = jQuery(val);
                                     var sibling = topHeightToTime(valObj.position().top,valObj.height());
                                     if(isConflict({"start":start,"end":end},sibling)) {
@@ -329,12 +329,12 @@
                     'mouseover':function() {
                         if(isDown == true) {
                             //範囲選択の色
-                            jQuery('div.column'+selectedColumnId+' > div.scheduleFrame > div.time'+jQuery(this).data("date")).addClass('selectedCell');
+                            jQuery('div.column'+selectedColumnId+' > div.eventFrame > div.time'+jQuery(this).data("date")).addClass('selectedCell');
                             //消す
                             switch(true) {
                                 case downCellDate == jQuery(this).data('date'):
-                                    jQuery('div.column'+selectedColumnId+' > div.scheduleFrame > div.time'+jQuery(this).data("date")).prevAll().removeClass('selectedCell');
-                                    jQuery('div.column'+selectedColumnId+' > div.scheduleFrame > div.time'+jQuery(this).data("date")).nextAll().removeClass('selectedCell');
+                                    jQuery('div.column'+selectedColumnId+' > div.eventFrame > div.time'+jQuery(this).data("date")).prevAll().removeClass('selectedCell');
+                                    jQuery('div.column'+selectedColumnId+' > div.eventFrame > div.time'+jQuery(this).data("date")).nextAll().removeClass('selectedCell');
                                     break;
                                 case downCellDate < jQuery(this).data('date'):
                                     jQuery('div.column'+selectedColumnId+' > div > div.time'+jQuery(this).data("date")).nextAll().removeClass('selectedCell');
